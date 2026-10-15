@@ -1,69 +1,47 @@
 package com.acidblack.catalogo_api.entities;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "productos")
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@Document(collection = "AB_Catalog")
 public class Producto {
 
+    // _id real de MongoDB (ObjectId). No se expone en el JSON.
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @JsonIgnore
+    private String mongoId;
 
-    @Column(nullable = false, length = 255)
+    // Campo numérico "id" que ya existe en tus documentos; es el que usa la API.
+    @Field("id")
+    @JsonProperty("id")
+    private Integer productoId;
+
     private String nombre;
 
-    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Field("precio")
     private BigDecimal precio;
 
-    @Column(name = "categorias", columnDefinition = "text[]", nullable = false)
     private String[] categorias;
 
-    @Column(name = "imagenes", columnDefinition = "text[]", nullable = false)
     private String[] imagenes;
 
-    @Column(length = 50)
     private String genero;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
-
-    // ==========================================
-    // CONSTRUCTORES
-    // ==========================================
+    private Instant updatedAt;
 
     public Producto() {
-    }
-
-    public Producto(Integer id, String nombre, String descripcion, BigDecimal precio,
-            String[] categorias, String[] imagenes, String genero,
-            OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.categorias = categorias;
-        this.imagenes = imagenes;
-        this.genero = genero;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     public Producto(String nombre, String descripcion, BigDecimal precio,
@@ -77,102 +55,93 @@ public class Producto {
     }
 
     // ==========================================
-    // GETTERS
+    // GETTERS Y SETTERS
     // ==========================================
 
-    public Integer getId() {
-        return id;
+    public String getMongoId() {
+        return mongoId;
+    }
+
+    public void setMongoId(String mongoId) {
+        this.mongoId = mongoId;
+    }
+
+    @JsonProperty("id")
+    public Integer getProductoId() {
+        return productoId;
+    }
+
+    @JsonProperty("id")
+    public void setProductoId(Integer productoId) {
+        this.productoId = productoId;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public BigDecimal getPrecio() {
-        return precio;
-    }
-
-    public String[] getCategorias() {
-        return categorias;
-    }
-
-    public String[] getImagenes() {
-        return imagenes;
-    }
-
-    public String getGenero() {
-        return genero;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public OffsetDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    // ==========================================
-    // SETTERS
-    // ==========================================
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
     }
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
 
+    public BigDecimal getPrecio() {
+        return precio;
+    }
+
     public void setPrecio(BigDecimal precio) {
         this.precio = precio;
+    }
+
+    public String[] getCategorias() {
+        return categorias;
     }
 
     public void setCategorias(String[] categorias) {
         this.categorias = categorias;
     }
 
+    public String[] getImagenes() {
+        return imagenes;
+    }
+
     public void setImagenes(String[] imagenes) {
         this.imagenes = imagenes;
+    }
+
+    public String getGenero() {
+        return genero;
     }
 
     public void setGenero(String genero) {
         this.genero = genero;
     }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 
     // ==========================================
-    // MÉTODOS DEL CICLO DE VIDA JPA
-    // ==========================================
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = OffsetDateTime.now();
-        updatedAt = OffsetDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = OffsetDateTime.now();
-    }
-
-    // ==========================================
-    // MÉTODOS EQUALS, HASHCODE Y TOSTRING
+    // EQUALS, HASHCODE Y TOSTRING
     // ==========================================
 
     @Override
@@ -181,21 +150,20 @@ public class Producto {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-
         Producto producto = (Producto) o;
-
-        return id != null ? id.equals(producto.id) : producto.id == null;
+        return mongoId != null ? mongoId.equals(producto.mongoId) : producto.mongoId == null;
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        return mongoId != null ? mongoId.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "Producto{" +
-                "id=" + id +
+                "mongoId=" + mongoId +
+                ", id=" + productoId +
                 ", nombre='" + nombre + '\'' +
                 ", descripcion='" + descripcion + '\'' +
                 ", precio=" + precio +

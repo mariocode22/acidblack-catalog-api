@@ -2,27 +2,33 @@ package com.acidblack.catalogo_api.respositories;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.acidblack.catalogo_api.entities.Producto;
 
 @Repository
-public interface ProductoRepository extends JpaRepository<Producto, Integer> {
+public interface ProductoRepository extends MongoRepository<Producto, String> {
 
-    @Query("SELECT p FROM Producto p JOIN p.categorias c WHERE c = :categoria")
-    List<Producto> findByCategoria(@Param("categoria") String categoria);
+    Optional<Producto> findByProductoId(Integer productoId);
 
-    @Query("SELECT p FROM Producto p WHERE p.precio BETWEEN :min AND :max")
-    List<Producto> findByPrecioRange(@Param("min") BigDecimal min, @Param("max") BigDecimal max);
+    void deleteByProductoId(Integer productoId);
 
-    @Query("SELECT p FROM Producto p WHERE " +
-            "LOWER(p.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
-            "LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    List<Producto> buscarPorTexto(@Param("texto") String texto);
+    Optional<Producto> findFirstByOrderByProductoIdDesc();
 
-    List<Producto> findByGenero(String genero);
+    // Coincide si la categoría está dentro del arreglo "categorias"
+    @Query("{ 'categorias': ?0 }")
+    List<Producto> findByCategoria(String categoria);
+
+    @Query("{ 'precio': { $gte: ?0, $lte: ?1 } }")
+    List<Producto> findByPrecioRange(BigDecimal min, BigDecimal max);
+
+    // "regex" debe venir ya escapado desde el servicio
+    @Query("{ $or: [ { 'nombre': { $regex: ?0, $options: 'i' } }, { 'descripcion': { $regex: ?0, $options: 'i' } } ] }")
+    List<Producto> buscarPorTexto(String regex);
+
+    List<Producto> findByGeneroIgnoreCase(String genero);
 }

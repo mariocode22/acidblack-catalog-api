@@ -73,12 +73,7 @@ public class ProductoController {
         return ResponseEntity.ok(productoService.buscarPorCategoria(categoria));
     }
 
-    @GetMapping("/precio")
-    public ResponseEntity<List<Producto>> buscarPorPrecio(
-            @RequestParam BigDecimal min,
-            @RequestParam BigDecimal max) {
-        return ResponseEntity.ok(productoService.buscarPorPrecio(min, max));
-    }
+ 
 
     @GetMapping("/buscar")
     public ResponseEntity<List<Producto>> buscarPorTexto(@RequestParam String texto) {
